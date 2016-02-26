@@ -1,0 +1,25 @@
+{
+  "name"       : "hoathis/uuuid",
+  "description": "The Hoathis\\Uuuid library.",
+  "type"       : "library",
+  "keywords"   : ["library", "UUID"],
+  "homepage"   : "http://hoa-project.net/",
+  "license"    : "BSD-3-Clause",
+  "authors"    : [
+    {
+      "name" : "1e1",
+      "email": "2.71828183E0+Hoa@gmail.com"
+    }
+  ],
+  "require": {
+    "php"          : ">=7"
+  },
+  "require-dev": {
+    "hoa/test"  : "~2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Hoathis\\Uuuid\\": "."
+    }
+  }
+}
