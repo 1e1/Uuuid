@@ -89,9 +89,13 @@ final class Uuid
     public function fromBase64(string $string): self
     {
         $this->uuid = null;
+        $replacements = [
+            '-' => '+',
+            '_' => '/',
+        ];
 
         $iso = str_pad($string, 4 - (strlen($string) % 4), '=');
-        $b64 = str_replace(['-', '_'], ['+', '/'], $iso);
+        $b64 = strtr($iso, $replacements);
         $bin = base64_decode($b64);
         $hex = bin2hex($bin);
         if (false !== ($uuid = filter_var($hex, FILTER_VALIDATE_REGEXP, [
@@ -115,8 +119,13 @@ final class Uuid
      */
     public function toBase64(): string
     {
+        $replacements = [
+            '+' => '-',
+            '/' => '_',
+        ];
+
         $b64 = base64_encode(hex2bin($this->uuid));
-        $iso = str_replace(['+', '/'], ['-', '_'], $b64);
+        $iso = strtr($b64, $replacements);
 
         return rtrim($iso, '=');
     }
@@ -125,17 +134,17 @@ final class Uuid
      * generate a new UUID.
      *
      * @param int    $typeId  [0..65535]
-     * @param string $binhash optional binary hash
+     * @param string $bin optional binary hash
      *
      * @return self
      */
-    public function generate(int $typeId, string $binhash = null): self
+    public function generate(int $typeId, string $bin = null): self
     {
         $this->_cache = [
             'timestamp' => time(),
             'type' => $typeId % 0x10000,
             'rand' => mt_rand(0, 0xffff),
-            'hash' => $binhash ?? openssl_random_pseudo_bytes(12),
+            'hash' => $bin ?? openssl_random_pseudo_bytes(12),
         ];
 
         $this->uuid = sprintf(
@@ -261,6 +270,6 @@ final class Uuid
      */
     protected static function collapse(string $uuid, string $sep): string
     {
-        return str_replace($sep, null, $uuid);
+        return strtr($uuid, $sep, null);
     }
 }
