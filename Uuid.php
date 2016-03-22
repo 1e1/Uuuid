@@ -62,6 +62,8 @@ final class Uuid
             ],
         ]);
 
+        $this->uuid = str_replace($sep, null, $this->uuid);
+
         $this->isValid = $this->_cache();
 
         return $this;
@@ -133,27 +135,30 @@ final class Uuid
     /**
      * generate a new UUID.
      *
-     * @param int    $typeId  [0..65535]
-     * @param string $bin optional binary hash
+     * @param int    $typeId [0..65535]
+     * @param string $bin    optional binary hash
      *
      * @return self
      */
     public function generate(int $typeId, string $bin = null): self
     {
+        $hash = bin2hex($bin ?? openssl_random_pseudo_bytes(12));
+
         $this->_cache = [
             'timestamp' => time(),
             'type' => $typeId % 0x10000,
             'rand' => mt_rand(0, 0xffff),
-            'hash' => $bin ?? openssl_random_pseudo_bytes(12),
+            'hash' => substr($hash, 0, 12),
+            'crc32' => $this->crc32() % 0x10000,
         ];
 
         $this->uuid = sprintf(
             '%08x%04x%04x%04x%012s',
             $this->_cache['timestamp'],
             $this->_cache['type'],
-            $this->crc32() % 0x10000,
+            $this->_cache['crc32'],
             $this->_cache['rand'],
-            substr(bin2hex($this->_cache['hash']), 0, 12)
+            $this->_cache['hash']
         );
 
         $this->isValid = true;
@@ -216,7 +221,14 @@ final class Uuid
      */
     public function crc32(): string
     {
-        return (int) hash('crc32', implode(self::$SALT, $this->_cache));
+        $copy = [
+            $this->_cache['timestamp'],
+            $this->_cache['type'],
+            $this->_cache['rand'],
+            $this->_cache['hash'],
+        ];
+
+        return (int) hash('crc32', implode(self::$SALT, $copy));
     }
 
     /**
@@ -227,20 +239,20 @@ final class Uuid
     private function _cache(): bool
     {
         $timestamp = substr($this->uuid, 0, 8);
-        $type = substr($this->uuid, 9, 4);
-        $crc32 = substr($this->uuid, 14, 4);
-        $rand = substr($this->uuid, 19, 4);
-        $hash = substr($this->uuid, 24, 12);
+        $type = substr($this->uuid, 8, 4);
+        $crc32 = substr($this->uuid, 12, 4);
+        $rand = substr($this->uuid, 16, 4);
+        $hash = substr($this->uuid, 20, 12);
 
         $this->_cache = [
-            'timestamp' => (int) hex2bin($timestamp),
-            'type' => (int) hex2bin($type),
-            'crc32' => (int) hex2bin($crc32),
-            'rand' => (int) hex2bin($rand),
+            'timestamp' => (int) hexdec($timestamp),
+            'type' => (int) hexdec($type),
+            'crc32' => (int) hexdec($crc32),
+            'rand' => (int) hexdec($rand),
             'hash' => hex2bin($hash),
         ];
 
-        return $crc32 === $this->crc32();
+        return $crc32 === ($this->crc32() % 0x10000);
     }
 
     /**
