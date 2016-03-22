@@ -62,6 +62,8 @@ final class Uuid
             ],
         ]);
 
+        $this->uuid = str_replace($sep, null, $this->uuid);
+
         $this->isValid = $this->_cache();
 
         return $this;
@@ -133,8 +135,8 @@ final class Uuid
     /**
      * generate a new UUID.
      *
-     * @param int    $typeId  [0..65535]
-     * @param string $bin optional binary hash
+     * @param int    $typeId [0..65535]
+     * @param string $bin    optional binary hash
      *
      * @return self
      */
@@ -227,10 +229,10 @@ final class Uuid
     private function _cache(): bool
     {
         $timestamp = substr($this->uuid, 0, 8);
-        $type = substr($this->uuid, 9, 4);
-        $crc32 = substr($this->uuid, 14, 4);
-        $rand = substr($this->uuid, 19, 4);
-        $hash = substr($this->uuid, 24, 12);
+        $type = substr($this->uuid, 8, 4);
+        $crc32 = substr($this->uuid, 12, 4);
+        $rand = substr($this->uuid, 16, 4);
+        $hash = substr($this->uuid, 20, 12);
 
         $this->_cache = [
             'timestamp' => (int) hex2bin($timestamp),
