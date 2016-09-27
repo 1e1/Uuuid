@@ -40,7 +40,7 @@ final class Uuid
     /**
      * @return string
      */
-    public function __toString(): string
+    public function __toString()
     {
         return $this->uuid;
     }
@@ -53,7 +53,7 @@ final class Uuid
      *
      * @return self
      */
-    public function fromHex(string $uuid, string $sep = self::SEP): self
+    public function fromHex($uuid, $sep = self::SEP)
     {
         $this->uuid = filter_var($uuid, FILTER_VALIDATE_REGEXP, [
             'options' => [
@@ -76,7 +76,7 @@ final class Uuid
      *
      * @return string
      */
-    public function toHex(string $sep = self::SEP): string
+    public function toHex($sep = self::SEP)
     {
         return self::expand($this->uuid, $sep);
     }
@@ -88,7 +88,7 @@ final class Uuid
      *
      * @return self
      */
-    public function fromBase64(string $string): self
+    public function fromBase64($string)
     {
         $this->uuid = null;
         $replacements = [
@@ -119,7 +119,7 @@ final class Uuid
      *
      * @return string
      */
-    public function toBase64(): string
+    public function toBase64()
     {
         $replacements = [
             '+' => '-',
@@ -140,9 +140,13 @@ final class Uuid
      *
      * @return self
      */
-    public function generate(int $typeId, string $bin = null): self
+    public function generate($typeId, $bin = null)
     {
-        $hash = bin2hex($bin ?? openssl_random_pseudo_bytes(12));
+        $randomBytes = null === $bin
+            ? openssl_random_pseudo_bytes(12)
+            : $bin;
+
+        $hash = bin2hex($randomBytes);
 
         $this->_cache = [
             'timestamp' => time(),
@@ -169,7 +173,7 @@ final class Uuid
     /**
      * @return bool
      */
-    public function isValid(): bool
+    public function isValid()
     {
         return $this->isValid;
     }
@@ -177,7 +181,7 @@ final class Uuid
     /**
      * @return int
      */
-    public function getTimestamp(): int
+    public function getTimestamp()
     {
         return $this->_cache['timestamp'];
     }
@@ -185,7 +189,7 @@ final class Uuid
     /**
      * @return int
      */
-    public function getType(): int
+    public function getType()
     {
         return $this->_cache['type'];
     }
@@ -193,7 +197,7 @@ final class Uuid
     /**
      * @return int
      */
-    public function getCrc32(): int
+    public function getCrc32()
     {
         return $this->_cache['crc32'];
     }
@@ -201,7 +205,7 @@ final class Uuid
     /**
      * @return int
      */
-    public function getRand(): int
+    public function getRand()
     {
         return $this->_cache['rand'];
     }
@@ -209,7 +213,7 @@ final class Uuid
     /**
      * @return string
      */
-    public function getHash(): string
+    public function getHash()
     {
         return $this->_cache['hash'];
     }
@@ -219,7 +223,7 @@ final class Uuid
      *
      * @return string
      */
-    public function crc32(): string
+    public function crc32()
     {
         $copy = [
             $this->_cache['timestamp'],
@@ -236,7 +240,7 @@ final class Uuid
      *
      * @return bool
      */
-    private function _cache(): bool
+    private function _cache()
     {
         $timestamp = substr($this->uuid, 0, 8);
         $type = substr($this->uuid, 8, 4);
@@ -263,7 +267,7 @@ final class Uuid
      *
      * @return string
      */
-    protected static function expand(string $uuid, string $sep): string
+    protected static function expand($uuid, $sep)
     {
         return substr($uuid, 0, 8)
         .$sep.substr($uuid, 8, 4)
@@ -280,7 +284,7 @@ final class Uuid
      *
      * @return string
      */
-    protected static function collapse(string $uuid, string $sep): string
+    protected static function collapse($uuid, $sep)
     {
         return strtr($uuid, $sep, null);
     }

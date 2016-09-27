@@ -12,10 +12,7 @@
     }
   ],
   "require": {
-    "php"          : ">=7"
-  },
-  "require-dev": {
-    "hoa/test"  : "~2.0"
+    "php"          : ">=5.4"
   },
   "autoload": {
     "psr-4": {
